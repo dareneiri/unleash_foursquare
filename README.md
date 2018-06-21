@@ -22,7 +22,7 @@ The process to get your Foursquare Swarm Check-in history involves the following
 2. Get check-in history of authenticated user
 3. Save check-in history as .json and .csv to optionally download
 4. The .csv file is used in pandas to generate data needed for charts
-5. User can optionally view thew charts to get a visual summary of data
+5. User can optionally view charts to get a visual summary of data
 
 * I used CDNJS for Chart.js 2.7.2 and Mapbox v0.44.2
 * Boostrap 4.1 is used for CSS framework and hosted locally since I made modifications
