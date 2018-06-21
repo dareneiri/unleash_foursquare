@@ -2,7 +2,7 @@
 Get your Foursquare Swarm check-in history in JSON or CSV and visualize a summary of your data in a micro web framework.
 
 # Introduction
-I am not aware of any repository that has been updated to get Foursquare Swarm check-in history of a user using OAuth2 (which Foursquare API now requires). I am also not anywhere of any solution that exists online where any user can pull their data through an existing web application. You can [preview how this code works right now](http://dareneiri.pythonanywhere.com/). 
+I am not aware of any repository that has been updated to get Foursquare Swarm check-in history of a user using OAuth2 (which Foursquare API now requires). I am also not aware of any solution that exists online where any user can pull their data through an existing web application. You can [preview how this code works right now](http://dareneiri.pythonanywhere.com/). 
 
 This project obtains all your Foursquare Swarm check-in history and allows you to download that information in JSON or CSV for your own downstream analyses. I use Chart.js to visualize some aspects of that check-in history and implemented a heatmap using Mapbox to visualize all your check-ins on a map. 
 
