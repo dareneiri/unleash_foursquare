@@ -1,0 +1,30 @@
+#map {
+    height: 300px;
+    text-align: justify; /*Need this to override body */
+
+
+}
+
+.mapboxgl-map {
+    width:500px;
+
+}
+
+table.dataframe, .dataframe th, .dataframe td {
+  border: none;
+  border-bottom: 1px solid #999999;
+  border-collapse: collapse;
+  text-align:left;
+  padding: 2px;
+  margin-bottom: 4px;
+  font-size: 0.95em;
+}
+
+.th {
+    background-color: #333333;
+}
+
+.tr {
+    background-color:#777777;
+}
+

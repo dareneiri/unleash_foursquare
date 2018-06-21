@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+
+    {% if server_response == 200 %}
+        <p class="lead">Connection to Foursquare API Successful!</p>
+        <p>Here's a preview of your data
+             {{ df | safe }}
+        </p>
+        <a href="charts" class="btn btn-lg btn-default">Visualize Your Data</a>
+        <a href="/downloads/{{ filename }}" class="btn btn-lg btn-default">Download All Data (JSON)</a>
+        <a href="/downloads/{{ filename_csv }}" class="btn btn-lg btn-default">Download All Data (CSV)</a>
+    {% else %}
+        <p class="lead">Connection to Foursquare API Not Successful!</p>
+    {% endif %}
+
+
+{% endblock %}

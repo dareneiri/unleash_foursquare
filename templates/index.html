@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+   <h1 class="cover-heading">Unleash Your Foursquare Swarm Data</h1>
+   <p class="lead">This is a simple method of making an API call to Foursquare's servers to get all your check-in history.</p>
+   <p class="lead">The data is available in a JSON or formatted CSV file.</p>
+       <p class="lead">
+       <a href="{{ url_for('auth') }}" class="btn btn-lg btn-default">Unleash Your Data</a>
+       </p>
+   <p>It may take several seconds to get all your data.</p>
+   <p>Disclaimer: This queries all your checkin history and temporarily creates files on the server.  </p>
+   <p>All files are deleted daily.</p>
+   <p>This is only for personal use. </p>
+   </br>   </br>
+   <h1 class="cover-heading">Here's A Sample Output</h1>
+   <img src="static/preview.png"</img>
+   <img src="static/preview1.png"</img>
+
+{% endblock %}
+

@@ -1,0 +1,499 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container">
+    <div class="row justify-content-center">
+
+        <div class ="col-mid-12">
+            <h1>{{ title }}</h1>
+          <div class="row justify-content-center">
+              <div class="col-mid-12">
+                  <p class="lead">Check-ins Over Time</p>
+              </div>
+          </div>
+
+            <canvas id="chart" width="1200" height="300"></canvas>
+            <script>
+            Chart.defaults.global.defaultFontColor = '#DCDCDC';
+              // chart data
+              var yearmonthData = {
+                labels : [
+                  {% for item in yearmonth_label %}
+                   "{{ item }}",
+                  {% endfor %}
+                ],
+
+                datasets : [{
+                              label: "Number of Check-ins",
+                              backgroundColor: "rgba(151,187,205,0.2)",
+                              borderColor: "rgba(151,187,205,1)",
+                              pointColor: "rgba(151,187,205,1)",
+                              data : [
+                                     {% for item in yearmonth_count %}
+                                     "{{ item }}",
+                                     {% endfor %}
+                              ]
+                }]
+              }
+
+             // get bar chart canvas
+             var yearmonth = document.getElementById("chart").getContext("2d");
+
+             // draw bar chart
+               new Chart(yearmonth, {
+                       type: 'line',
+                       data: yearmonthData,
+                       options:  {
+                           responsive: true,
+                           legend: {
+                               display: false
+                           },
+                           scales: {
+                               xAxes: [{
+                                       position: "bottom",
+                                       ticks: {
+                                               autoSkip: true,
+                                       }
+                              }]
+                          }
+                       }
+               }
+             );
+            </script>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-mid-12">
+          <p class="lead"></p>
+          <p class="lead">A Glance At Your Data...</p>
+      </div>
+    </div>
+
+      <div class="row justify-content-center">
+
+            <div class="col-mid-6">
+                <canvas id="chart-days" width="500" height="300"></canvas>
+                <script>
+                  // chart data
+                  var dayofweekData = {
+                    labels : [
+                      {% for item in day_of_week_label %}
+                       "{{ item }}",
+                      {% endfor %}
+                    ],
+
+                    datasets : [{
+                                  label: "Percent",
+                                  backgroundColor: "rgba(151,187,205,0.8)",
+                                  borderColor: "rgba(151,187,205,1)",
+                                  pointColor: "rgba(151,187,205,1)",
+                                  data : [
+                                         {% for item in day_of_week_prop %}
+                                         "{{ item }}",
+                                         {% endfor %}
+                                  ]
+                    }]
+                  }
+
+                 // get bar chart canvas
+                 var dayofweek = document.getElementById("chart-days").getContext("2d");
+
+                 // draw bar chart
+                   new Chart(dayofweek, {
+                           type: 'bar',
+                           data: dayofweekData,
+                           options:  {
+                               title: {
+                                   display: true,
+                                   text: 'Proportion of Check-ins by Weekday'
+                               },
+                               tooltips: {
+                                    enabled: true,
+                                    mode: 'single',
+                                    callbacks: {
+                                        label: function(tooltipItems, data) {
+                                            return tooltipItems.yLabel + ' %';
+                                        }
+                                    }
+                                },
+                               legend: {
+                                   display: false
+                               },
+                               responsive: false,
+                               scales: {
+                                   yAxes: [{
+                                          scaleLabel: {
+                                            display: true,
+                                            labelString: 'Percentage'
+                                            }
+                                  }],
+                                   xAxes: [{
+                                           position: "bottom",
+                                           ticks: {
+                                                   autoSkip:false
+                                           }
+                                  }]
+                              }
+                           }
+                   }
+                 );
+
+                </script>
+           </div>
+            <div class="col-mid-6">
+                    <div id='map'></div>
+                    <script>
+                    mapboxgl.accessToken = '{{ MAPBOX_ACCESSTOKEN }}';
+                    var map = new mapboxgl.Map({
+                        container: 'map',
+                        style: 'mapbox://styles/mapbox/dark-v9',
+                        center: [{{mapbox_center_lon }}, {{mapbox_center_lat }}],
+                        zoom: 8
+                        });
+
+                    map.on('load', function() {
+                          map.addSource('checkins', {
+                            type: 'geojson',
+                            data: '/downloads/{{ filename_geojson }}'
+                          });
+                            map.addLayer({
+                                    "id": "checkins-heat",
+                                    "type": "heatmap",
+                                    "source": "checkins",
+                                    "maxzoom": 15,
+                                    "paint": {
+                                        // Increase the heatmap weight based on frequency and property magnitude
+                                        "heatmap-weight": [
+                                            "interpolate",
+                                            ["linear"],
+                                            ["get", "mag"],
+                                            1, 0,
+                                            62, 1
+                                        ],
+                                        // Increase the heatmap color weight weight by zoom level
+                                        // heatmap-intensity is a multiplier on top of heatmap-weight
+                                        "heatmap-intensity": [
+                                            "interpolate",
+                                            ["linear"],
+                                            ["zoom"],
+                                            11, 1,
+                                            15, 3
+                                        ],
+                                        // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+                                        // Begin color ramp at 0-stop with a 0-transparancy color
+                                        // to create a blur-like effect.
+                                        "heatmap-color": [
+                                            "interpolate",
+                                            ["linear"],
+                                            ["heatmap-density"],
+                                            0, "rgba(33,102,172,0)",
+                                            0.2, "rgb(103,169,207)",
+                                            0.4, "rgb(209,229,240)",
+                                            0.6, "rgb(253,219,199)",
+                                            0.8, "rgb(239,138,98)",
+                                            1, "rgb(178,24,43)"
+                                        ],
+                                        // Adjust the heatmap radius by zoom level
+                                        "heatmap-radius": [
+                                            "interpolate",
+                                            ["linear"],
+                                            ["zoom"],
+                                            11, 15,
+                                            15, 20
+                                        ],
+                                        // Transition from heatmap to circle layer by zoom level
+                                        "heatmap-opacity": [
+                                            "interpolate",
+                                            ["linear"],
+                                            ["zoom"],
+                                            14, 1,
+                                            15, 0
+                                        ],
+                                    }
+                                }, 'waterway-label');
+
+                                map.addLayer({
+                                  id: 'checkins-point',
+                                  type: 'circle',
+                                  source: 'checkins',
+                                  minzoom: 14,
+                                  paint: {
+                                    // increase the radius of the circle as the zoom level and dbh value increases
+                                    'circle-radius': {
+                                      property: 'dbh',
+                                      type: 'exponential',
+                                      stops: [
+                                        [{ zoom: 15, value: 1 }, 5],
+                                        [{ zoom: 15, value: 62 }, 10],
+                                        [{ zoom: 22, value: 1 }, 20],
+                                        [{ zoom: 22, value: 62 }, 50],
+                                      ]
+                                    },
+                                    'circle-color': {
+                                      property: 'dbh',
+                                      type: 'exponential',
+                                      stops: [
+                                        [0, 'rgba(236,222,239,0)'],
+                                        [10, 'rgb(236,222,239)'],
+                                        [20, 'rgb(208,209,230)'],
+                                        [30, 'rgb(166,189,219)'],
+                                        [40, 'rgb(103,169,207)'],
+                                        [50, 'rgb(28,144,153)'],
+                                        [60, 'rgb(1,108,89)']
+                                      ]
+                                    },
+                                    'circle-stroke-color': 'white',
+                                    'circle-stroke-width': 1,
+                                    'circle-opacity': {
+                                      stops: [
+                                        [14, 0],
+                                        [15, 1]
+                                      ]
+                                    }
+                                  }
+                                }, 'waterway-label');
+
+                        });
+
+                    </script>
+            </div>
+      </div>
+
+      <div class="row justify-content-center">
+          <div class="col-mid-12">
+              <p class="lead"></p>
+              <p class="lead">Venues</p>
+          </div>
+      </div>
+
+      <div class="row justify-content-center">
+            <div class="col-mid-6">
+                <canvas id="chart-1" width="500" height="300"></canvas>
+                <script>
+                  // chart data
+                  var topvenuesData = {
+                    labels : [
+                      {% for item in top_venues_label %}
+                       "{{ item }}",
+                      {% endfor %}
+                    ],
+
+                    datasets : [{
+                                  label: "Number of Check-ins",
+                                  backgroundColor: "rgba(151,187,205,0.8)",
+                                  borderColor: "rgba(151,187,205,1)",
+                                  pointColor: "rgba(151,187,205,1)",
+                                  data : [
+                                         {% for item in top_venues %}
+                                         "{{ item }}",
+                                         {% endfor %}
+                                  ]
+                    }]
+                  }
+
+                 // get bar chart canvas
+                 var topvenues = document.getElementById("chart-1").getContext("2d");
+
+                 // draw bar chart
+                   new Chart(topvenues, {
+                           type: 'horizontalBar',
+                           data: topvenuesData,
+                           options:  {
+                               title: {
+                                   display: true,
+                                   text: 'Most Frequented'
+                               },
+                               legend: {
+                                   display: false
+                               },
+                               responsive: false,
+                               scales: {
+                                   xAxes: [{
+                                           position: "bottom",
+                                           ticks: {
+                                                   autoSkip:false
+                                           }
+                                  }]
+                              }
+                           }
+                   }
+                 );
+
+                </script>
+           </div>
+            <div class"col-md-6">
+                <canvas id="chart-2" width="500" height="300"></canvas>
+                <script>
+                  // chart data
+                  var topvenues3moData = {
+                    labels : [
+                      {% for item in top_venues_3mo_label %}
+                       "{{ item }}",
+                      {% endfor %}
+                    ],
+
+                    datasets : [{
+                                  label: "Number of Check-ins",
+                                  backgroundColor: "rgba(151,187,205,0.8)",
+                                  borderColor: "rgba(151,187,205,1)",
+                                  pointColor: "rgba(151,187,205,1)",
+                                  data : [
+                                         {% for item in top_venues_3mo %}
+                                         "{{ item }}",
+                                         {% endfor %}
+                                  ]
+                    }]
+                  }
+
+                 // get bar chart canvas
+                 var topvenues3mo = document.getElementById("chart-2").getContext("2d");
+
+                 // draw bar chart
+                   new Chart(topvenues3mo, {
+                           type: 'horizontalBar',
+                           data: topvenues3moData,
+                           options:  {
+                               title: {
+                                   display: true,
+                                   text: 'Past Three Months'
+                               },
+                               legend: {
+                                   display: false
+                               },
+                               responsive: false,
+                               scales: {
+                                   xAxes: [{
+                                           position: "bottom",
+                                           ticks: {
+                                                   autoSkip:false
+                                           }
+                                  }]
+                              }
+                           }
+                   }
+                 );
+
+                </script>
+            </div>
+        </div>
+      <div class="row justify-content-center">
+          <div class="col-mid-12">
+              <p class="lead"></p>
+              <p class="lead">Categories</p>
+          </div>
+      </div>
+      <div class="row justify-content-center">
+            <div class="col-mid-6">
+                <canvas id="chart-3" width="500" height="300"></canvas>
+                <script>
+                  // chart data
+                  var topcategoriesData = {
+                    labels : [
+                      {% for item in top_categories_label %}
+                       "{{ item }}",
+                      {% endfor %}
+                    ],
+
+                    datasets : [{
+                                  label: "Number of Check-ins",
+                                  backgroundColor: "rgba(151,187,205,0.8)",
+                                  borderColor: "rgba(151,187,205,1)",
+                                  pointColor: "rgba(151,187,205,1)",
+                                  data : [
+                                         {% for item in top_categories %}
+                                         "{{ item }}",
+                                         {% endfor %}
+                                  ]
+                    }]
+                  }
+
+                 // get bar chart canvas
+                 var topcategories = document.getElementById("chart-3").getContext("2d");
+
+                 // draw bar chart
+                   new Chart(topcategories, {
+                           type: 'horizontalBar',
+                           data: topcategoriesData,
+                           options:  {
+                               title: {
+                                   display: true,
+                                   text: 'Most Frequented'
+                               },
+                               legend: {
+                                   display: false
+                               },
+                               responsive: false,
+                               scales: {
+                                   xAxes: [{
+                                           position: "bottom",
+                                           ticks: {
+                                                   autoSkip:false
+                                           }
+                                  }]
+                              }
+                           }
+                   }
+                 );
+
+                </script>
+           </div>
+            <div class"col-md-6">
+                <canvas id="chart-4" width="500" height="300"></canvas>
+                <script>
+                  // chart data
+                  var topcategories3moData = {
+                    labels : [
+                      {% for item in top_categories_3mo_label %}
+                       "{{ item }}",
+                      {% endfor %}
+                    ],
+
+                    datasets : [{
+                                  label: "Number of Check-ins",
+                                  backgroundColor: "rgba(151,187,205,0.8)",
+                                  borderColor: "rgba(151,187,205,1)",
+                                  pointColor: "rgba(151,187,205,1)",
+                                  data : [
+                                         {% for item in top_categories_3mo %}
+                                         "{{ item }}",
+                                         {% endfor %}
+                                  ]
+                    }]
+                  }
+
+                 // get bar chart canvas
+                 var topcategories3mo = document.getElementById("chart-4").getContext("2d");
+
+                 // draw bar chart
+                   new Chart(topcategories3mo, {
+                           type: 'horizontalBar',
+                           data: topcategories3moData,
+                           options:  {
+                               title: {
+                                   display: true,
+                                   text: 'Past Three Months'
+                               },
+                               legend: {
+                                   display: false
+                               },
+                               responsive: false,
+                               scales: {
+                                   xAxes: [{
+                                           position: "bottom",
+                                           ticks: {
+                                                   autoSkip:false
+                                           }
+                                  }]
+                              }
+                           }
+                   }
+                 );
+
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

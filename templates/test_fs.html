@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+    {% if meta['code'] == 200 %}
+        <p class="lead">Connection to Foursquare API Successful!</p>
+        <p class="lead"> </p>
+        <p>You searched for {{ response['query'] }} in {{ response['headerFullLocation'] }}, with {{ response['totalResults'] }} results.</p>
+        {% for names in response['groups'] %}
+        <!--<p>{{ names['items'] }}</p>--> 
+        {% endfor %}
+
+        {% for item in venues %}
+        <p>Name: {{ item['name'] }} </p>
+        <p>Location: {{ item['location']['address'] }} </p>   
+        {% endfor %}
+
+    {% else %}
+        <p class="lead">Connection to Foursquare API Not Successful!</p>
+    {% endif %}
+<br/>
+{% endblock %}
